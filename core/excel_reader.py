@@ -1,5 +1,5 @@
 """
-leerExel.py
+excel_reader.py
 
 Lectura del archivo Excel de programación semanal.
 """
@@ -10,11 +10,13 @@ import pandas as pd
 
 from config import (
     COLUMNAS_OBLIGATORIAS,
+    COLUMN_ASESOR,
     COLUMN_CLIENTE,
     COLUMN_DIA,
     COLUMN_DIRECCION,
     COLUMN_LATITUD,
     COLUMN_LONGITUD,
+    SHEET_NAME,
 )
 
 from core.models import Cliente
@@ -49,6 +51,7 @@ class ExcelReader:
 
             df = pd.read_excel(
                 ruta,
+                sheet_name=SHEET_NAME,
                 engine="openpyxl"
             )
 
@@ -67,6 +70,10 @@ class ExcelReader:
             cliente = Cliente(
 
                 fila_excel=indice + 2,
+
+                asesor=self._texto(
+                    fila[COLUMN_ASESOR]
+                ),
 
                 dia=self._texto(
                     fila[COLUMN_DIA]
@@ -142,6 +149,12 @@ class ExcelReader:
         if pd.isna(valor):
 
             return float("nan")
+
+        # Defensivo: si el Excel llega a traer el número como texto
+        # con coma decimal (configuración regional), lo normalizamos.
+        if isinstance(valor, str):
+
+            valor = valor.strip().replace(",", ".")
 
         try:
 

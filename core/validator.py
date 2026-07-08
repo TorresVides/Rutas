@@ -37,6 +37,16 @@ class ErrorValidacion:
 
 class Validator:
 
+    # Campos cuyo error excluye la fila del KML (no se puede
+    # ubicar el marcador sin ellos). Un cliente duplicado, en
+    # cambio, solo se reporta pero SÍ se incluye en el KML.
+    CAMPOS_EXCLUYENTES = {
+        "NOMBRE_CLIENTE",
+        "DIA_ESPECIFICO",
+        "LATITUD_CLIENTE",
+        "LONGITUD_CLIENTE",
+    }
+
     def validar(
         self,
         clientes: list[Cliente]
@@ -53,6 +63,39 @@ class Validator:
         )
 
         return errores
+
+    def separar(
+        self,
+        clientes: list[Cliente],
+    ) -> tuple[list[Cliente], list[ErrorValidacion]]:
+        """
+        Valida la lista completa y separa los clientes en dos grupos:
+
+        - válidos: se pueden generar en el KML sin problema.
+        - excluidos: tienen un error en un campo excluyente
+          (nombre, día o coordenadas) y no se incluyen en el KML.
+
+        Los duplicados se reportan como error pero no excluyen al
+        cliente del KML.
+
+        Devuelve (clientes_validos, todos_los_errores).
+        """
+
+        errores = self.validar(clientes)
+
+        filas_excluidas = {
+            error.fila_excel
+            for error in errores
+            if error.campo in self.CAMPOS_EXCLUYENTES
+        }
+
+        validos = [
+            cliente
+            for cliente in clientes
+            if cliente.fila_excel not in filas_excluidas
+        ]
+
+        return validos, errores
 
     # =================================================
 
@@ -163,6 +206,37 @@ class Validator:
         else:
 
             cliente.dia = NORMALIZACION_DIAS[dia]
+
+        # -------------------------------
+        # Coordenadas en (0, 0)
+        # -------------------------------
+        # No es un error de rango (0 es técnicamente válido), pero
+        # en la práctica (0,0) significa que la geocodificación
+        # falló: nunca es una ubicación real en Bogotá.
+
+        if cliente.latitud == 0 and cliente.longitud == 0:
+
+            errores.append(
+
+                ErrorValidacion(
+
+                    fila_excel=cliente.fila_excel,
+
+                    dia=cliente.dia,
+
+                    cliente=cliente.nombre,
+
+                    campo="LATITUD_CLIENTE",
+
+                    valor="0, 0",
+
+                    mensaje="Coordenadas en (0,0): la geocodificación probablemente falló."
+
+                )
+
+            )
+
+            return errores
 
         # -------------------------------
         # Latitud
