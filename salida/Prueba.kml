@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+    <Document>
+        <name>Prueba Automatizacion</name>
+        <Folder>
+            <name>PruebaTresMarcadores</name>
+            <Placemark>
+                <name>Cliente 1</name>
+                <description>Direccion Cliente 1</description>
+                <Point>
+                    <coordinates>-74.10949266253124,4.548754317895369</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <name>Cliente 2</name>
+                <description>Direccion Cliente 2</description>
+                <Point>
+                    <coordinates>-74.13945101201534,4.5741275918945</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <name>Cliente 3</name>
+                <description>Direccion Cliente 3</description>
+                <Point>
+                    <coordinates>-74.08123456789012,4.601234567890123</coordinates>
+                </Point>
+            </Placemark>
+        </Folder>
+    </Document>
+</kml>
